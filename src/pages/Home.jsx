@@ -118,15 +118,13 @@ const Home = () => {
             
             {/* Navigation Tabs */}
             <div className="flex space-x-1 sm:space-x-2 overflow-x-auto scrollbar-hide pb-4">
-              {
+              {[
                 { id: 'dashboard', label: 'Dashboard', icon: 'LayoutDashboard' },
                 { id: 'crops', label: 'Crops', icon: 'Wheat' },
                 { id: 'tasks', label: 'Tasks', icon: 'CheckSquare' },
                 { id: 'expenses', label: 'Expenses', icon: 'DollarSign' },
                 { id: 'weather', label: 'Weather', icon: 'Cloud' },
                 { id: 'analytics', label: 'Analytics', icon: 'BarChart3' }
-              ].map(tab => (
-
               ].map(tab => (
                 <button
                   key={tab.id}
