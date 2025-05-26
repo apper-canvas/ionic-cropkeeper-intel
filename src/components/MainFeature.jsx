@@ -17,6 +17,7 @@ const MainFeature = ({
   setExpenses, 
   mockWeather 
 }) => {
+  return (
   const [showAddForm, setShowAddForm] = useState(false)
   const [formData, setFormData] = useState({})
 
@@ -1007,10 +1008,3 @@ const MainFeature = ({
         return null
     }
   }
-
-
-    <div className="max-w-7xl mx-auto">
-      {renderContent()}
-    </div>
-  )
-}
