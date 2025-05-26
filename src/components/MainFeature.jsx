@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { toast } from 'react-toastify'
 import { format, addDays } from 'date-fns'
+import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
+
 import ApperIcon from './ApperIcon'
 
 const MainFeature = ({ 
@@ -671,6 +673,323 @@ const MainFeature = ({
         </div>
       </div>
     )
+
+  const renderAnalyticsContent = () => {
+    const farmExpenses = expenses.filter(expense => expense.farmId === selectedFarm.id)
+    const farmCrops = crops.filter(crop => crop.farmId === selectedFarm.id)
+    
+    // Prepare expense trend data by month and category
+    const expensesByMonth = farmExpenses.reduce((acc, expense) => {
+      const month = format(expense.date, 'MMM yyyy')
+      if (!acc[month]) {
+        acc[month] = { month, Seeds: 0, Fertilizer: 0, Tools: 0, Equipment: 0, Labor: 0, Utilities: 0, Other: 0 }
+      }
+      acc[month][expense.category] = (acc[month][expense.category] || 0) + expense.amount
+      return acc
+    }, {})
+    
+    const expenseTrendData = Object.values(expensesByMonth).sort((a, b) => 
+      new Date(a.month) - new Date(b.month)
+    )
+    
+    // Prepare crop yield data (mock data for demonstration)
+    const cropYieldData = [
+      { month: 'Jan 2024', Corn: 45, Tomatoes: 32 },
+      { month: 'Feb 2024', Corn: 52, Tomatoes: 38 },
+      { month: 'Mar 2024', Corn: 58, Tomatoes: 45 },
+      { month: 'Apr 2024', Corn: 65, Tomatoes: 52 },
+      { month: 'May 2024', Corn: 72, Tomatoes: 58 },
+      { month: 'Jun 2024', Corn: 78, Tomatoes: 65 }
+    ]
+    
+    // Expense category distribution
+    const expensesByCategory = farmExpenses.reduce((acc, expense) => {
+      acc[expense.category] = (acc[expense.category] || 0) + expense.amount
+      return acc
+    }, {})
+    
+    const categoryDistributionData = Object.entries(expensesByCategory).map(([category, amount]) => ({
+      name: category,
+      value: amount
+    }))
+    
+    const COLORS = ['#22c55e', '#fb923c', '#8b5cf6', '#ef4444', '#06b6d4', '#84cc16', '#f59e0b']
+    
+    return (
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-2xl sm:text-3xl font-bold text-surface-900 dark:text-white">Farm Analytics</h2>
+          <p className="text-surface-600 dark:text-surface-400">Visualize your farm's performance and expenses</p>
+        </div>
+        
+        {/* Key Metrics Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="bg-white dark:bg-surface-800 rounded-2xl p-6 shadow-card border border-surface-200 dark:border-surface-700">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-surface-600 dark:text-surface-400">Total Revenue</p>
+                <p className="text-2xl font-bold text-primary-600 dark:text-primary-400">$12,450</p>
+                <p className="text-xs text-primary-600 dark:text-primary-400">+15% vs last month</p>
+              </div>
+              <div className="w-12 h-12 bg-primary-100 dark:bg-primary-900/30 rounded-xl flex items-center justify-center">
+                <ApperIcon name="TrendingUp" className="w-6 h-6 text-primary-600 dark:text-primary-400" />
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-white dark:bg-surface-800 rounded-2xl p-6 shadow-card border border-surface-200 dark:border-surface-700">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-surface-600 dark:text-surface-400">Avg Yield</p>
+                <p className="text-2xl font-bold text-secondary-600 dark:text-secondary-400">68 tons</p>
+                <p className="text-xs text-secondary-600 dark:text-secondary-400">+8% vs last season</p>
+              </div>
+              <div className="w-12 h-12 bg-secondary-100 dark:bg-secondary-900/30 rounded-xl flex items-center justify-center">
+                <ApperIcon name="BarChart3" className="w-6 h-6 text-secondary-600 dark:text-secondary-400" />
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-white dark:bg-surface-800 rounded-2xl p-6 shadow-card border border-surface-200 dark:border-surface-700">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-surface-600 dark:text-surface-400">Profit Margin</p>
+                <p className="text-2xl font-bold text-accent dark:text-accent">24.5%</p>
+                <p className="text-xs text-accent">+3% vs last quarter</p>
+              </div>
+              <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-xl flex items-center justify-center">
+                <ApperIcon name="Percent" className="w-6 h-6 text-accent" />
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-white dark:bg-surface-800 rounded-2xl p-6 shadow-card border border-surface-200 dark:border-surface-700">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-surface-600 dark:text-surface-400">Efficiency</p>
+                <p className="text-2xl font-bold text-primary-600 dark:text-primary-400">92%</p>
+                <p className="text-xs text-primary-600 dark:text-primary-400">+5% vs target</p>
+              </div>
+              <div className="w-12 h-12 bg-primary-100 dark:bg-primary-900/30 rounded-xl flex items-center justify-center">
+                <ApperIcon name="Target" className="w-6 h-6 text-primary-600 dark:text-primary-400" />
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        {/* Charts Section */}
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+          {/* Expense Trends Chart */}
+          <div className="bg-white dark:bg-surface-800 rounded-2xl p-6 shadow-card border border-surface-200 dark:border-surface-700">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h3 className="text-lg font-semibold text-surface-900 dark:text-white">Expense Trends by Category</h3>
+                <p className="text-sm text-surface-600 dark:text-surface-400">Monthly spending breakdown</p>
+              </div>
+              <div className="flex items-center space-x-2">
+                <ApperIcon name="BarChart3" className="w-5 h-5 text-surface-400" />
+              </div>
+            </div>
+            <div className="h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={expenseTrendData}>
+                  <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                  <XAxis 
+                    dataKey="month" 
+                    tick={{ fontSize: 12 }}
+                    className="text-surface-600 dark:text-surface-400"
+                  />
+                  <YAxis 
+                    tick={{ fontSize: 12 }}
+                    className="text-surface-600 dark:text-surface-400"
+                  />
+                  <Tooltip 
+                    contentStyle={{
+                      backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                      border: '1px solid #e2e8f0',
+                      borderRadius: '8px',
+                      fontSize: '14px'
+                    }}
+                  />
+                  <Legend />
+                  <Bar dataKey="Seeds" stackId="a" fill="#22c55e" />
+                  <Bar dataKey="Fertilizer" stackId="a" fill="#fb923c" />
+                  <Bar dataKey="Tools" stackId="a" fill="#8b5cf6" />
+                  <Bar dataKey="Equipment" stackId="a" fill="#ef4444" />
+                  <Bar dataKey="Labor" stackId="a" fill="#06b6d4" />
+                  <Bar dataKey="Utilities" stackId="a" fill="#84cc16" />
+                  <Bar dataKey="Other" stackId="a" fill="#f59e0b" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+          
+          {/* Crop Yield Trends Chart */}
+          <div className="bg-white dark:bg-surface-800 rounded-2xl p-6 shadow-card border border-surface-200 dark:border-surface-700">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h3 className="text-lg font-semibold text-surface-900 dark:text-white">Crop Yield Trends</h3>
+                <p className="text-sm text-surface-600 dark:text-surface-400">Monthly yield progression (tons)</p>
+              </div>
+              <div className="flex items-center space-x-2">
+                <ApperIcon name="TrendingUp" className="w-5 h-5 text-surface-400" />
+              </div>
+            </div>
+            <div className="h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={cropYieldData}>
+                  <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                  <XAxis 
+                    dataKey="month" 
+                    tick={{ fontSize: 12 }}
+                    className="text-surface-600 dark:text-surface-400"
+                  />
+                  <YAxis 
+                    tick={{ fontSize: 12 }}
+                    className="text-surface-600 dark:text-surface-400"
+                  />
+                  <Tooltip 
+                    contentStyle={{
+                      backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                      border: '1px solid #e2e8f0',
+                      borderRadius: '8px',
+                      fontSize: '14px'
+                    }}
+                  />
+                  <Legend />
+                  <Line 
+                    type="monotone" 
+                    dataKey="Corn" 
+                    stroke="#22c55e" 
+                    strokeWidth={3}
+                    dot={{ r: 6, fill: '#22c55e' }}
+                    activeDot={{ r: 8, fill: '#22c55e' }}
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="Tomatoes" 
+                    stroke="#fb923c" 
+                    strokeWidth={3}
+                    dot={{ r: 6, fill: '#fb923c' }}
+                    activeDot={{ r: 8, fill: '#fb923c' }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </div>
+        
+        {/* Bottom Row Charts */}
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+          {/* Expense Category Distribution */}
+          <div className="bg-white dark:bg-surface-800 rounded-2xl p-6 shadow-card border border-surface-200 dark:border-surface-700">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h3 className="text-lg font-semibold text-surface-900 dark:text-white">Expense Distribution</h3>
+                <p className="text-sm text-surface-600 dark:text-surface-400">Spending by category</p>
+              </div>
+              <div className="flex items-center space-x-2">
+                <ApperIcon name="PieChart" className="w-5 h-5 text-surface-400" />
+              </div>
+            </div>
+            <div className="h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={categoryDistributionData}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {categoryDistributionData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip 
+                    contentStyle={{
+                      backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                      border: '1px solid #e2e8f0',
+                      borderRadius: '8px',
+                      fontSize: '14px'
+                    }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+          
+          {/* Performance Metrics */}
+          <div className="bg-white dark:bg-surface-800 rounded-2xl p-6 shadow-card border border-surface-200 dark:border-surface-700">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h3 className="text-lg font-semibold text-surface-900 dark:text-white">Farm Performance</h3>
+                <p className="text-sm text-surface-600 dark:text-surface-400">Key performance indicators</p>
+              </div>
+              <div className="flex items-center space-x-2">
+                <ApperIcon name="Activity" className="w-5 h-5 text-surface-400" />
+              </div>
+            </div>
+            <div className="space-y-6">
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium text-surface-700 dark:text-surface-300">Crop Health Score</span>
+                  <span className="text-sm font-bold text-primary-600 dark:text-primary-400">92%</span>
+                </div>
+                <div className="w-full bg-surface-200 dark:bg-surface-700 rounded-full h-2">
+                  <div className="bg-primary-500 h-2 rounded-full" style={{ width: '92%' }}></div>
+                </div>
+              </div>
+              
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium text-surface-700 dark:text-surface-300">Resource Efficiency</span>
+                  <span className="text-sm font-bold text-secondary-600 dark:text-secondary-400">85%</span>
+                </div>
+                <div className="w-full bg-surface-200 dark:bg-surface-700 rounded-full h-2">
+                  <div className="bg-secondary-500 h-2 rounded-full" style={{ width: '85%' }}></div>
+                </div>
+              </div>
+              
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium text-surface-700 dark:text-surface-300">Task Completion</span>
+                  <span className="text-sm font-bold text-accent">78%</span>
+                </div>
+                <div className="w-full bg-surface-200 dark:bg-surface-700 rounded-full h-2">
+                  <div className="bg-accent h-2 rounded-full" style={{ width: '78%' }}></div>
+                </div>
+              </div>
+              
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium text-surface-700 dark:text-surface-300">Cost Optimization</span>
+                  <span className="text-sm font-bold text-primary-600 dark:text-primary-400">89%</span>
+                </div>
+                <div className="w-full bg-surface-200 dark:bg-surface-700 rounded-full h-2">
+                  <div className="bg-primary-500 h-2 rounded-full" style={{ width: '89%' }}></div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="mt-6 p-4 bg-primary-50 dark:bg-primary-900/20 rounded-xl border border-primary-200 dark:border-primary-800">
+              <div className="flex items-center space-x-3">
+                <ApperIcon name="Lightbulb" className="w-5 h-5 text-primary-600 dark:text-primary-400" />
+                <div>
+                  <h4 className="font-medium text-primary-900 dark:text-primary-100">Optimization Tip</h4>
+                  <p className="text-sm text-primary-800 dark:text-primary-200">Consider reducing fertilizer costs by 15% based on soil analysis data.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   }
 
   const renderContent = () => {
@@ -683,8 +1002,13 @@ const MainFeature = ({
         return renderExpensesContent()
       case 'weather':
         return renderWeatherContent()
+      case 'analytics':
+        return renderAnalyticsContent()
       default:
         return null
+    }
+  }
+
     }
   }
 
