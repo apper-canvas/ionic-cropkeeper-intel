@@ -126,7 +126,7 @@ const Home = () => {
                 { id: 'expenses', label: 'Expenses', icon: 'DollarSign' },
                 { id: 'weather', label: 'Weather', icon: 'Cloud' },
                 { id: 'analytics', label: 'Analytics', icon: 'BarChart3' }
-              ]
+              ].map(tab => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
@@ -142,6 +142,7 @@ const Home = () => {
                   </div>
                 </button>
               ))}
+            </div>
             </div>
           </div>
         </header>
@@ -272,7 +273,6 @@ const Home = () => {
             )}
 
             {(activeTab === 'farms' || activeTab === 'crops' || activeTab === 'tasks' || activeTab === 'expenses' || activeTab === 'weather' || activeTab === 'analytics') && (
-
               <motion.div
                 key={activeTab}
                 initial={{ opacity: 0, y: 20 }}
@@ -289,11 +289,11 @@ const Home = () => {
                   expenses={expenses}
                   setExpenses={setExpenses}
                   mockWeather={mockWeather}
-                />
                   farms={farms}
                   setFarms={setFarms}
-
+                />
               </motion.div>
+            )}
             )}
           </AnimatePresence>
         </main>
