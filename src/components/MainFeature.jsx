@@ -990,7 +990,6 @@ const MainFeature = ({
     )
   }
 
-  }
 
   const renderContent = () => {
     switch (activeTab) {
@@ -1009,8 +1008,6 @@ const MainFeature = ({
     }
   }
 
-    }
-  }
 
   return (
     <div className="max-w-7xl mx-auto">
