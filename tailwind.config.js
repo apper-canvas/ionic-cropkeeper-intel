@@ -7,17 +7,58 @@ export default {
   theme: {
     extend: {
       colors: {
+        border: 'hsl(214.3 31.8% 91.4%)',
+        input: 'hsl(214.3 31.8% 91.4%)',
+        ring: 'hsl(222.2 84% 4.9%)',
+        background: 'hsl(0 0% 100%)',
+        foreground: 'hsl(222.2 84% 4.9%)',
         primary: {
           DEFAULT: '#22c55e',
+          50: '#f0fdf4',
+          100: '#dcfce7',
+          200: '#bbf7d0',
+          300: '#86efac',
+          400: '#4ade80',
+          500: '#22c55e',
+          600: '#16a34a',
+          700: '#15803d',
+          800: '#166534',
+          900: '#14532d',
           light: '#4ade80',
           dark: '#16a34a'
         },
         secondary: {
           DEFAULT: '#fb923c',
+          50: '#fff7ed',
+          100: '#ffedd5',
+          200: '#fed7aa',
+          300: '#fdba74',
+          400: '#fb923c',
+          500: '#f97316',
+          600: '#ea580c',
+          700: '#c2410c',
+          800: '#9a3412',
+          900: '#7c2d12',
           light: '#fdba74',
           dark: '#ea580c'
         },
         accent: '#8b5cf6',
+        destructive: {
+          DEFAULT: 'hsl(0 84.2% 60.2%)',
+          foreground: 'hsl(210 40% 98%)'
+        },
+        muted: {
+          DEFAULT: 'hsl(210 40% 96%)',
+          foreground: 'hsl(215.4 16.3% 46.9%)'
+        },
+        popover: {
+          DEFAULT: 'hsl(0 0% 100%)',
+          foreground: 'hsl(222.2 84% 4.9%)'
+        },
+        card: {
+          DEFAULT: 'hsl(0 0% 100%)',
+          foreground: 'hsl(222.2 84% 4.9%)'
+        },
         surface: {
           50: '#f8fafc',
           100: '#f1f5f9',
@@ -30,6 +71,7 @@ export default {
           800: '#1e293b',
           900: '#0f172a'
         }
+      },
       },
       fontFamily: {
         sans: ['Inter', 'ui-sans-serif', 'system-ui'],

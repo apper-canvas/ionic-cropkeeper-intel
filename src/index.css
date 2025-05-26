@@ -3,9 +3,10 @@
 @import 'tailwindcss/utilities';
 
 @layer base {
-  * {
-    @apply border-border;
+  html {
+    scroll-behavior: smooth;
   }
+  
   
   body {
     @apply bg-background text-foreground font-sans;
