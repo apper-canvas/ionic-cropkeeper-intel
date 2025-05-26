@@ -144,8 +144,6 @@ const Home = () => {
               ))}
             </div>
             </div>
-          </div>
-        </header>
         </header>
 
         {/* Main Content */}
