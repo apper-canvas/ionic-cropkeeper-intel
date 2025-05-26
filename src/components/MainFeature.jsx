@@ -673,6 +673,7 @@ const MainFeature = ({
         </div>
       </div>
     )
+  }
 
   const renderAnalyticsContent = () => {
     const farmExpenses = expenses.filter(expense => expense.farmId === selectedFarm.id)
@@ -990,7 +991,6 @@ const MainFeature = ({
     )
   }
 
-
   const renderContent = () => {
     switch (activeTab) {
       case 'crops':
@@ -1009,11 +1009,8 @@ const MainFeature = ({
   }
 
 
-  return (
     <div className="max-w-7xl mx-auto">
       {renderContent()}
     </div>
   )
 }
-
-export default MainFeature
