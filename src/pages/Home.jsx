@@ -120,12 +120,13 @@ const Home = () => {
             <div className="flex space-x-1 sm:space-x-2 overflow-x-auto scrollbar-hide pb-4">
               {[
                 { id: 'dashboard', label: 'Dashboard', icon: 'LayoutDashboard' },
+                { id: 'farms', label: 'Farms', icon: 'MapPin' },
                 { id: 'crops', label: 'Crops', icon: 'Wheat' },
                 { id: 'tasks', label: 'Tasks', icon: 'CheckSquare' },
                 { id: 'expenses', label: 'Expenses', icon: 'DollarSign' },
                 { id: 'weather', label: 'Weather', icon: 'Cloud' },
                 { id: 'analytics', label: 'Analytics', icon: 'BarChart3' }
-              ].map(tab => (
+              ]
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
@@ -270,7 +271,7 @@ const Home = () => {
               </motion.div>
             )}
 
-            {(activeTab === 'crops' || activeTab === 'tasks' || activeTab === 'expenses' || activeTab === 'weather' || activeTab === 'analytics') && (
+            {(activeTab === 'farms' || activeTab === 'crops' || activeTab === 'tasks' || activeTab === 'expenses' || activeTab === 'weather' || activeTab === 'analytics') && (
 
               <motion.div
                 key={activeTab}
@@ -289,6 +290,9 @@ const Home = () => {
                   setExpenses={setExpenses}
                   mockWeather={mockWeather}
                 />
+                  farms={farms}
+                  setFarms={setFarms}
+
               </motion.div>
             )}
           </AnimatePresence>

@@ -9,7 +9,7 @@ import ApperIcon from './ApperIcon'
 const MainFeature = ({ 
   activeTab, 
   selectedFarm, 
-  crops, 
+const MainFeature = ({ activeTab, selectedFarm, crops, setCrops, tasks, setTasks, expenses, setExpenses, farms, setFarms, mockWeather }) => {
   setCrops, 
   tasks, 
   setTasks, 
@@ -50,6 +50,20 @@ const MainFeature = ({
           farmId: selectedFarm.id,
           cropId: formData.cropId || '',
           title: formData.title || '',
+  // Farm Management State
+  const [showFarmModal, setShowFarmModal] = useState(false)
+  const [showViewFarmModal, setShowViewFarmModal] = useState(false)
+  const [editingFarm, setEditingFarm] = useState(null)
+  const [viewingFarm, setViewingFarm] = useState(null)
+  const [farmFormData, setFarmFormData] = useState({
+    name: '',
+    location: '',
+    size: '',
+    description: ''
+  })
+  const [farmSearchTerm, setFarmSearchTerm] = useState('')
+
+
           description: formData.description || '',
           scheduledDate: new Date(formData.scheduledDate || new Date()),
           completed: false,
@@ -278,6 +292,86 @@ const MainFeature = ({
             <span>Add Task</span>
           </button>
         </div>
+
+  // Farm Management Functions
+  const handleAddFarm = () => {
+    setFarmFormData({ name: '', location: '', size: '', description: '' })
+    setEditingFarm(null)
+    setShowFarmModal(true)
+  }
+
+  const handleEditFarm = (farm) => {
+    setFarmFormData({
+      name: farm.name,
+      location: farm.location,
+      size: farm.size.toString(),
+      description: farm.description || ''
+    })
+    setEditingFarm(farm)
+    setShowFarmModal(true)
+  }
+
+  const handleViewFarm = (farm) => {
+    setViewingFarm(farm)
+    setShowViewFarmModal(true)
+  }
+
+  const handleSaveFarm = (e) => {
+    e.preventDefault()
+    
+    if (!farmFormData.name.trim() || !farmFormData.location.trim() || !farmFormData.size.trim()) {
+      toast.error('Please fill in all required fields')
+      return
+    }
+
+    if (isNaN(farmFormData.size) || parseFloat(farmFormData.size) <= 0) {
+      toast.error('Please enter a valid farm size')
+      return
+    }
+
+    const farmData = {
+      name: farmFormData.name.trim(),
+      location: farmFormData.location.trim(),
+      size: parseFloat(farmFormData.size),
+      description: farmFormData.description.trim(),
+      crops: 0,
+      tasks: 0
+    }
+
+    if (editingFarm) {
+      setFarms(farms.map(farm => 
+        farm.id === editingFarm.id 
+          ? { ...farm, ...farmData }
+          : farm
+      ))
+      toast.success('Farm updated successfully!')
+    } else {
+      const newFarm = {
+        id: Date.now().toString(),
+        ...farmData
+      }
+      setFarms([...farms, newFarm])
+      toast.success('Farm added successfully!')
+    }
+
+    setShowFarmModal(false)
+    setFarmFormData({ name: '', location: '', size: '', description: '' })
+    setEditingFarm(null)
+  }
+
+  const handleDeleteFarm = (farmId) => {
+    if (window.confirm('Are you sure you want to delete this farm? This action cannot be undone.')) {
+      setFarms(farms.filter(farm => farm.id !== farmId))
+      toast.success('Farm deleted successfully!')
+    }
+  }
+
+  const filteredFarms = farms.filter(farm =>
+    farm.name.toLowerCase().includes(farmSearchTerm.toLowerCase()) ||
+    farm.location.toLowerCase().includes(farmSearchTerm.toLowerCase())
+  )
+
+
 
         {showAddForm && (
           <motion.div
@@ -713,6 +807,310 @@ const MainFeature = ({
       name: category,
       value: amount
     }))
+
+  // Render Farms Content
+  const renderFarmsContent = () => (
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h2 className="text-2xl sm:text-3xl font-bold text-surface-900 dark:text-white">Farm Management</h2>
+          <p className="text-surface-600 dark:text-surface-400 mt-1">Manage your farm properties and details</p>
+        </div>
+        <button
+          onClick={handleAddFarm}
+          className="bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-xl font-medium transition-colors flex items-center space-x-2 shadow-soft"
+        >
+          <ApperIcon name="Plus" className="w-4 h-4" />
+          <span>Add New Farm</span>
+        </button>
+      </div>
+
+      {/* Search and Filters */}
+      <div className="bg-white dark:bg-surface-800 rounded-2xl p-4 sm:p-6 shadow-card border border-surface-200 dark:border-surface-700">
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex-1">
+            <div className="relative">
+              <ApperIcon name="Search" className="absolute left-3 top-1/2 transform -translate-y-1/2 text-surface-400 w-4 h-4" />
+              <input
+                type="text"
+                placeholder="Search farms by name or location..."
+                value={farmSearchTerm}
+                onChange={(e) => setFarmSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-surface-300 dark:border-surface-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none bg-white dark:bg-surface-700 text-surface-900 dark:text-white"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Farms Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {filteredFarms.map(farm => (
+          <div key={farm.id} className="bg-white dark:bg-surface-800 rounded-2xl p-6 shadow-card border border-surface-200 dark:border-surface-700 hover:shadow-lg transition-shadow">
+            <div className="flex items-start justify-between mb-4">
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-surface-900 dark:text-white mb-1">{farm.name}</h3>
+                <p className="text-surface-600 dark:text-surface-400 text-sm flex items-center">
+                  <ApperIcon name="MapPin" className="w-4 h-4 mr-1" />
+                  {farm.location}
+                </p>
+              </div>
+              <div className="flex space-x-2">
+                <button
+                  onClick={() => handleViewFarm(farm)}
+                  className="p-2 text-surface-600 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors"
+                  title="View Details"
+                >
+                  <ApperIcon name="Eye" className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => handleEditFarm(farm)}
+                  className="p-2 text-surface-600 hover:text-secondary-600 hover:bg-secondary-50 dark:hover:bg-secondary-900/20 rounded-lg transition-colors"
+                  title="Edit Farm"
+                >
+                  <ApperIcon name="Edit" className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => handleDeleteFarm(farm.id)}
+                  className="p-2 text-surface-600 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                  title="Delete Farm"
+                >
+                  <ApperIcon name="Trash2" className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+            
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <span className="text-surface-600 dark:text-surface-400 text-sm">Size</span>
+                <span className="font-medium text-surface-900 dark:text-white">{farm.size} acres</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-surface-600 dark:text-surface-400 text-sm">Crops</span>
+                <span className="font-medium text-surface-900 dark:text-white">{farm.crops || 0}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-surface-600 dark:text-surface-400 text-sm">Tasks</span>
+                <span className="font-medium text-surface-900 dark:text-white">{farm.tasks || 0}</span>
+              </div>
+            </div>
+            
+            {farm.description && (
+              <div className="mt-4 pt-4 border-t border-surface-200 dark:border-surface-700">
+                <p className="text-surface-600 dark:text-surface-400 text-sm line-clamp-2">{farm.description}</p>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {filteredFarms.length === 0 && (
+        <div className="bg-white dark:bg-surface-800 rounded-2xl p-8 shadow-card border border-surface-200 dark:border-surface-700 text-center">
+          <ApperIcon name="MapPin" className="w-12 h-12 text-surface-400 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-surface-900 dark:text-white mb-2">
+            {farmSearchTerm ? 'No farms found' : 'No farms yet'}
+          </h3>
+          <p className="text-surface-600 dark:text-surface-400 mb-4">
+            {farmSearchTerm 
+              ? 'Try adjusting your search terms' 
+              : 'Start by adding your first farm to begin managing your agricultural operations'
+            }
+          </p>
+          {!farmSearchTerm && (
+            <button
+              onClick={handleAddFarm}
+              className="bg-primary-500 hover:bg-primary-600 text-white px-6 py-2 rounded-xl font-medium transition-colors inline-flex items-center space-x-2"
+            >
+              <ApperIcon name="Plus" className="w-4 h-4" />
+              <span>Add Your First Farm</span>
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Farm Modal */}
+      {showFarmModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white dark:bg-surface-800 rounded-2xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xl font-bold text-surface-900 dark:text-white">
+                {editingFarm ? 'Edit Farm' : 'Add New Farm'}
+              </h3>
+              <button
+                onClick={() => setShowFarmModal(false)}
+                className="text-surface-500 hover:text-surface-700 dark:hover:text-surface-300 transition-colors"
+              >
+                <ApperIcon name="X" className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <form onSubmit={handleSaveFarm} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-2">
+                  Farm Name *
+                </label>
+                <input
+                  type="text"
+                  value={farmFormData.name}
+                  onChange={(e) => setFarmFormData({ ...farmFormData, name: e.target.value })}
+                  className="w-full px-3 py-2 border border-surface-300 dark:border-surface-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none bg-white dark:bg-surface-700 text-surface-900 dark:text-white"
+                  placeholder="Enter farm name"
+                  required
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-2">
+                  Location *
+                </label>
+                <input
+                  type="text"
+                  value={farmFormData.location}
+                  onChange={(e) => setFarmFormData({ ...farmFormData, location: e.target.value })}
+                  className="w-full px-3 py-2 border border-surface-300 dark:border-surface-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none bg-white dark:bg-surface-700 text-surface-900 dark:text-white"
+                  placeholder="Enter farm location"
+                  required
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-2">
+                  Size (acres) *
+                </label>
+                <input
+                  type="number"
+                  value={farmFormData.size}
+                  onChange={(e) => setFarmFormData({ ...farmFormData, size: e.target.value })}
+                  className="w-full px-3 py-2 border border-surface-300 dark:border-surface-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none bg-white dark:bg-surface-700 text-surface-900 dark:text-white"
+                  placeholder="Enter farm size in acres"
+                  min="0.1"
+                  step="0.1"
+                  required
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-2">
+                  Description
+                </label>
+                <textarea
+                  value={farmFormData.description}
+                  onChange={(e) => setFarmFormData({ ...farmFormData, description: e.target.value })}
+                  className="w-full px-3 py-2 border border-surface-300 dark:border-surface-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none bg-white dark:bg-surface-700 text-surface-900 dark:text-white"
+                  placeholder="Enter farm description (optional)"
+                  rows="3"
+                />
+              </div>
+              
+              <div className="flex space-x-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowFarmModal(false)}
+                  className="flex-1 px-4 py-2 border border-surface-300 dark:border-surface-600 text-surface-700 dark:text-surface-300 rounded-lg hover:bg-surface-50 dark:hover:bg-surface-700 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+                >
+                  {editingFarm ? 'Update Farm' : 'Add Farm'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* View Farm Modal */}
+      {showViewFarmModal && viewingFarm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white dark:bg-surface-800 rounded-2xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xl font-bold text-surface-900 dark:text-white">Farm Details</h3>
+              <button
+                onClick={() => setShowViewFarmModal(false)}
+                className="text-surface-500 hover:text-surface-700 dark:hover:text-surface-300 transition-colors"
+              >
+                <ApperIcon name="X" className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-surface-600 dark:text-surface-400 mb-1">
+                  Farm Name
+                </label>
+                <p className="text-surface-900 dark:text-white font-medium">{viewingFarm.name}</p>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-surface-600 dark:text-surface-400 mb-1">
+                  Location
+                </label>
+                <p className="text-surface-900 dark:text-white flex items-center">
+                  <ApperIcon name="MapPin" className="w-4 h-4 mr-2 text-surface-500" />
+                  {viewingFarm.location}
+                </p>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-surface-600 dark:text-surface-400 mb-1">
+                  Size
+                </label>
+                <p className="text-surface-900 dark:text-white">{viewingFarm.size} acres</p>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-surface-600 dark:text-surface-400 mb-1">
+                    Crops
+                  </label>
+                  <p className="text-surface-900 dark:text-white font-medium">{viewingFarm.crops || 0}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-surface-600 dark:text-surface-400 mb-1">
+                    Tasks
+                  </label>
+                  <p className="text-surface-900 dark:text-white font-medium">{viewingFarm.tasks || 0}</p>
+                </div>
+              </div>
+              
+              {viewingFarm.description && (
+                <div>
+                  <label className="block text-sm font-medium text-surface-600 dark:text-surface-400 mb-1">
+                    Description
+                  </label>
+                  <p className="text-surface-900 dark:text-white">{viewingFarm.description}</p>
+                </div>
+              )}
+            </div>
+            
+            <div className="flex space-x-3 pt-6">
+              <button
+                onClick={() => {
+                  setShowViewFarmModal(false)
+                  handleEditFarm(viewingFarm)
+                }}
+                className="flex-1 bg-secondary-500 hover:bg-secondary-600 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center justify-center space-x-2"
+              >
+                <ApperIcon name="Edit" className="w-4 h-4" />
+                <span>Edit Farm</span>
+              </button>
+              <button
+                onClick={() => setShowViewFarmModal(false)}
+                className="flex-1 px-4 py-2 border border-surface-300 dark:border-surface-600 text-surface-700 dark:text-surface-300 rounded-lg hover:bg-surface-50 dark:hover:bg-surface-700 transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+
+
     
     const COLORS = ['#22c55e', '#fb923c', '#8b5cf6', '#ef4444', '#06b6d4', '#84cc16', '#f59e0b']
     
@@ -1011,7 +1409,8 @@ const MainFeature = ({
   return (
     <div className="p-4 sm:p-6">
       {renderContent()}
-    </div>
+      {activeTab === 'farms' && renderFarmsContent()}
+
   )
 }
 
